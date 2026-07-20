@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>WOLF GLOBAL | Mobile Assessment (A1)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;500;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-desk: #010b13;       
+            --bg-folder: #031525;      
+            --bg-paper: #051c30;       
+            --brand-ocean: #0ea5e9;   
+            --brand-mint: #10b981;    
+            --text-main: #f8fafc;     
+            --text-muted: #94a3b8;    
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #000;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .font-display { font-family: 'Outfit', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* === MOBILE PHONE MOCKUP === */
+        #mobile-frame {
+            width: 100%;
+            max-width: 430px; 
+            height: 100dvh;
+            background-color: var(--bg-folder);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(14, 165, 233, 0.1);
+        }
+
+        @media (min-width: 431px) {
+            #mobile-frame {
+                height: 90vh;
+                border-radius: 40px;
+                border: 12px solid #000;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9), inset 0 0 0 2px #051c30;
+            }
+        }
+
+        .phone-notch { display: none; }
+        @media (min-width: 431px) {
+            .phone-notch {
+                display: block;
+                position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+                width: 150px; height: 30px; background-color: #000;
+                border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; z-index: 50;
+            }
+        }
+
+        .status-bar {
+            height: 44px; display: flex; justify-content: space-between; align-items: center;
+            padding: 0 24px; font-size: 12px; font-weight: 600; z-index: 40; position: relative; color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .btn-neon {
+            background: var(--brand-ocean); color: #000; border-radius: 8px;
+            font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.05em; transition: all 0.3s ease; border: none; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+        }
+        .btn-neon:active { transform: scale(0.96); background: #0284c7; }
+
+        .btn-outline {
+            background: transparent; border: 2px solid #0ea5e9; color: var(--text-main); border-radius: 8px;
+            font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.05em; transition: all 0.2s ease; cursor: pointer;
+        }
+        .btn-outline:active { background: #051c30; transform: scale(0.96); border-color: #0284c7;}
+
+        .mcq-option {
+            background: var(--bg-paper); border: 2px solid transparent;
+            transition: all 0.2s ease; cursor: pointer; display: flex; align-items: center; padding: 1.2rem; border-radius: 12px;
+            width: 100%; text-align: left; box-shadow: 0 4px 10px rgba(0,0,0,0.2); font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .mcq-option:active:not(.locked-check) { transform: scale(0.98); border-color: var(--brand-ocean); background: #010b13;}
+        .mcq-option.correct { background: rgba(16, 185, 129, 0.1); border-color: var(--brand-mint); color: var(--brand-mint); }
+        .mcq-option.wrong { background: rgba(239, 68, 68, 0.1); border-color: #ef4444; color: #ef4444; }
+
+        .fade-in { animation: fadeIn 0.4s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(3px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-5px, 0, 0); } 40%, 60% { transform: translate3d(5px, 0, 0); } }
+
+        .progress-container { width: 100%; height: 6px; background: rgba(255,255,255,0.05); overflow: hidden; border-radius: 4px; margin-bottom: 24px; border: 1px solid rgba(14,165,233,0.3);}
+        .progress-fill { height: 100%; background: var(--brand-ocean); transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px rgba(14,165,233,0.5);}
+
+        #confetti-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 9999; }
+    </style>
+</head>
+<body>
+
+    <div id="mobile-frame">
+        <canvas id="confetti-canvas"></canvas>
+        <div class="phone-notch"></div>
+        
+        <div class="status-bar">
+            <span id="clock">09:00</span>
+            <div class="flex items-center gap-2">
+                <i class="fas fa-signal text-[10px] text-[var(--brand-ocean)]"></i>
+                <i class="fas fa-wifi text-[10px] text-[var(--brand-ocean)]"></i>
+                <i class="fas fa-battery-full text-xs text-[var(--text-main)]"></i>
+            </div>
+        </div>
+
+        <div id="screen-start" class="flex-grow flex flex-col p-8 relative z-10 animate-in fade-in overflow-y-auto">
+            <div class="my-auto flex flex-col items-center w-full">
+                <div class="w-24 h-24 rounded-full bg-[var(--bg-paper)] mb-8 flex items-center justify-center shadow-lg border-2 border-[var(--brand-ocean)] text-[var(--brand-ocean)]">
+                    <i class="fas fa-id-badge text-4xl"></i>
+                </div>
+                
+                <div class="text-center space-y-3 w-full">
+                    <p class="text-[var(--text-main)] font-bold text-[10px] tracking-[0.2em] uppercase font-mono bg-[var(--brand-ocean)] px-4 py-1.5 rounded-full inline-block shadow-sm">Basic Form</p>
+                    <h1 class="text-4xl font-extrabold text-white leading-tight tracking-tight uppercase font-display mt-4">Job<br><span class="text-[var(--brand-ocean)]">Application</span></h1>
+                    <p class="text-sm text-[var(--text-muted)] mt-4 leading-relaxed px-2 font-medium">Answer these 15 basic questions about professions to finish your application.</p>
+                </div>
+                
+                <div class="w-full bg-[var(--bg-paper)] border border-[#0f2940] p-6 rounded-xl mt-8 text-left mb-6 shadow-sm relative">
+                    <p class="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest border-b border-[#0f2940] pb-3 mb-4 font-mono">> FORM INFO</p>
+                    <ul class="text-sm text-[var(--text-main)] font-mono space-y-3 font-medium">
+                        <li class="flex items-center"><div class="w-6 h-6 rounded bg-[var(--bg-folder)] border border-[#0f2940] flex items-center justify-center mr-3"><i class="fas fa-check text-[var(--brand-ocean)] text-[10px]"></i></div> Total Questions: 15</li>
+                        <li class="flex items-center"><div class="w-6 h-6 rounded bg-[var(--bg-folder)] border border-[#0f2940] flex items-center justify-center mr-3"><i class="fas fa-check text-[var(--brand-ocean)] text-[10px]"></i></div> Verb To Be</li>
+                        <li class="flex items-center"><div class="w-6 h-6 rounded bg-[var(--bg-folder)] border border-[#0f2940] flex items-center justify-center mr-3"><i class="fas fa-check text-[var(--brand-ocean)] text-[10px]"></i></div> A / An</li>
+                    </ul>
+                </div>
+            </div>
+
+            <button onclick="startHomework()" class="btn-neon w-full py-4 text-base mt-8 mb-4 flex-shrink-0">
+                Start Test
+            </button>
+        </div>
+
+        <div id="screen-quiz" class="hidden flex-grow flex-col relative z-10 h-full overflow-hidden">
+            <div class="pt-6 pb-2 px-6 flex justify-between items-center z-20 flex-shrink-0">
+                <div class="flex flex-col">
+                    <span class="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-widest font-mono">Progress</span>
+                    <span class="text-sm font-black text-[var(--brand-ocean)] font-mono" id="progress-text">01 / 15</span>
+                </div>
+                <div class="flex items-center gap-2 bg-[var(--bg-paper)] px-3 py-1.5 rounded-full border border-[#0f2940] shadow-sm">
+                    <i class="fas fa-star text-[var(--brand-mint)] text-[10px]"></i>
+                    <span class="text-xs font-bold text-[var(--text-main)] font-ui" id="score-text">000</span>
+                </div>
+            </div>
+            
+            <div class="px-6 w-full flex-shrink-0 mt-2"><div class="progress-container"><div id="progress-bar" class="progress-fill" style="width: 0%;"></div></div></div>
+
+            <div class="flex-grow overflow-y-auto px-6 pb-32 flex flex-col" id="question-container"></div>
+
+            <div class="p-6 bg-gradient-to-t from-[var(--bg-folder)] via-[var(--bg-folder)] to-transparent mt-auto hidden absolute bottom-0 left-0 w-full z-30" id="next-btn-container">
+                <button onclick="nextQuestion()" class="btn-neon w-full py-4 text-base shadow-lg flex justify-center items-center gap-2">
+                    Next <i class="fas fa-arrow-right text-sm"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="screen-result" class="hidden flex-grow flex-col p-8 relative z-10 animate-in fade-in overflow-y-auto">
+            <div class="my-auto flex flex-col items-center text-center w-full">
+                <div id="result-icon" class="w-32 h-32 rounded-full bg-[rgba(16,185,129,0.1)] mb-8 flex items-center justify-center border-4 border-[#10b981] shadow-[0_0_30px_rgba(16,185,129,0.2)]">
+                    <i class="fas fa-check-double text-6xl text-[#10b981]"></i>
+                </div>
+                
+                <h2 class="text-4xl font-extrabold text-white uppercase font-display mb-3" id="result-title">Test Passed</h2>
+                <p class="text-[10px] text-black font-bold uppercase tracking-widest border border-transparent px-4 py-1.5 bg-[var(--brand-mint)] rounded-full mb-10 shadow-sm font-mono" id="result-rank">Profile: Hired</p>
+                
+                <div class="w-full bg-[var(--bg-paper)] border border-[#0f2940] rounded-2xl py-8 mb-12 shadow-sm relative">
+                    <p class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold mb-2 font-mono">Final Score</p>
+                    <p class="text-6xl font-black text-white font-display" id="final-score">15/15</p>
+                </div>
+            </div>
+            
+            <button onclick="location.reload()" class="btn-outline w-full py-4 text-sm mt-8 mb-4 flex-shrink-0">
+                Finish Application
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        function updateClock() {
+            const now = new Date(); let h = now.getHours(); let m = now.getMinutes();
+            h = h < 10 ? '0'+h : h; m = m < 10 ? '0'+m : m;
+            document.getElementById('clock').innerText = `${h}:${m}`;
+        }
+        setInterval(updateClock, 1000); updateClock();
+
+        const homeworkData = [
+            {
+                q: "I ___ a nurse.",
+                options: ["am", "is", "are"],
+                correct: 0,
+                hint: "For 'I', always use 'am'."
+            },
+            {
+                q: "He ___ a manager.",
+                options: ["is", "am", "are"],
+                correct: 0,
+                hint: "For 'He', 'She', or 'It', use 'is'."
+            },
+            {
+                q: "She is ___ artist.",
+                options: ["an", "a", "the"],
+                correct: 0,
+                hint: "Use 'an' before vowels (A, E, I, O, U)."
+            },
+            {
+                q: "I work 40 ___ a week.",
+                options: ["hours", "hour", "times"],
+                correct: 0,
+                hint: "Use the plural 'hours' for numbers biggers than 1."
+            },
+            {
+                q: "I am ___ student.",
+                options: ["a", "an", "one"],
+                correct: 0,
+                hint: "Use 'a' before a consonant sound (student)."
+            },
+            {
+                q: "Which sentence is CORRECT?",
+                options: ["I work 20 hours.", "I am work 20 hours.", "I working 20 hours."],
+                correct: 0,
+                hint: "To talk about your routine, just use 'I work'."
+            },
+            {
+                q: "They ___ nurses.",
+                options: ["are", "is", "am"],
+                correct: 0,
+                hint: "For 'They', 'We', and 'You', use 'are'."
+            },
+            {
+                q: "I ___ full-time.",
+                options: ["study", "am study", "studys"],
+                correct: 0,
+                hint: "For 'I', just use the base verb 'study'."
+            },
+            {
+                q: "He is ___ engineer.",
+                options: ["an", "a", "two"],
+                correct: 0,
+                hint: "'Engineer' starts with a vowel sound (E)."
+            },
+            {
+                q: "What do you ___ for a living?",
+                options: ["do", "are", "work"],
+                correct: 0,
+                hint: "The common question is: What do you DO?"
+            },
+            {
+                q: "___ you a student?",
+                options: ["Are", "Is", "Am"],
+                correct: 0,
+                hint: "To make a question for 'you', start with 'Are'."
+            },
+            {
+                q: "My sister ___ a manager.",
+                options: ["is", "are", "am"],
+                correct: 0,
+                hint: "'My sister' = She. Use 'is'."
+            },
+            {
+                q: "I work ___ a supermarket.",
+                options: ["at", "in", "to"],
+                correct: 0,
+                hint: "We usually say 'work AT a place'."
+            },
+            {
+                q: "Which sentence is CORRECT?",
+                options: ["I am a doctor.", "I am doctor.", "I doctor."],
+                correct: 0,
+                hint: "In English, you must use 'A' or 'AN' before the job."
+            },
+            {
+                q: "How many hours ___ you work?",
+                options: ["do", "are", "is"],
+                correct: 0,
+                hint: "To ask a routine question with 'work', use 'do you'."
+            }
+        ];
+
+        let currentQ = 0; let score = 0; let isLocked = false;
+
+        function showScreen(id) {
+            document.getElementById('screen-start').classList.add('hidden');
+            document.getElementById('screen-quiz').classList.add('hidden');
+            document.getElementById('screen-result').classList.add('hidden');
+            
+            const target = document.getElementById(id);
+            target.classList.remove('hidden'); target.classList.add('flex');
+            target.classList.remove('fade-in'); void target.offsetWidth; target.classList.add('fade-in');
+        }
+
+        function startHomework() {
+            shuffleArray(homeworkData);
+            homeworkData.forEach(q => {
+                const correctText = q.options[q.correct];
+                shuffleArray(q.options);
+                q.correct = q.options.indexOf(correctText);
+            });
+
+            currentQ = 0; score = 0;
+            updateTopBar(); renderQuestion();
+            showScreen('screen-quiz');
+        }
+
+        function updateTopBar() {
+            document.getElementById('progress-text').innerText = `${String(currentQ + 1).padStart(2, '0')} / ${homeworkData.length}`;
+            document.getElementById('progress-bar').style.width = `${((currentQ) / homeworkData.length) * 100}%`;
+            document.getElementById('score-text').innerText = String(score * 10).padStart(3, '0');
+        }
+
+        function renderQuestion() {
+            isLocked = false;
+            document.getElementById('next-btn-container').classList.add('hidden');
+            
+            const qData = homeworkData[currentQ];
+            const container = document.getElementById('question-container');
+            const letters = ['A', 'B', 'C'];
+
+            let html = `
+                <div class="mb-8 mt-4 animate-in fade-in">
+                    <h2 class="text-3xl font-bold text-white leading-snug font-display">${qData.q.replace(/\[(.*?)\]/g, '<span class="text-[var(--brand-ocean)]">$1</span>')}</h2>
+                </div>
+                <div class="space-y-4 w-full animate-in fade-in" id="options-box" style="animation-delay: 0.1s; animation-fill-mode: both;">
+            `;
+
+            qData.options.forEach((opt, idx) => {
+                html += `
+                    <button class="mcq-option group" onclick="selectOption(${idx}, this)">
+                        <div class="w-12 h-12 rounded-xl bg-[var(--bg-folder)] flex items-center justify-center text-sm font-bold text-[var(--text-muted)] mr-5 font-mono group-hover:bg-[var(--brand-ocean)] group-hover:text-black transition-colors">${letters[idx]}</div>
+                        <span class="text-xl font-bold text-[var(--text-main)] font-ui tracking-wide">${opt}</span>
+                    </button>
+                `;
+            });
+
+            html += `
+                </div>
+                <div id="feedback-box" class="hidden mt-8 p-6 rounded-xl bg-[var(--bg-paper)] border-l-4 border-[#ef4444] shadow-md animate-in fade-in mb-8 relative">
+                    <p class="text-[10px] font-bold text-[#ef4444] uppercase tracking-[0.2em] font-mono mb-2">> TIP</p>
+                    <p class="text-lg text-white font-ui leading-relaxed italic">"${qData.hint}"</p>
+                </div>
+            `;
+
+            container.innerHTML = html; container.scrollTop = 0;
+        }
+
+        function selectOption(selectedIdx, btnEl) {
+            if (isLocked) return;
+            isLocked = true;
+
+            const qData = homeworkData[currentQ];
+            const isCorrect = selectedIdx === qData.correct;
+            const parent = document.getElementById('options-box');
+
+            Array.from(parent.children).forEach((child, i) => {
+                child.classList.add('locked-check');
+                if (i === qData.correct) {
+                    child.classList.add('correct'); 
+                } else if (i !== qData.correct && i === selectedIdx) {
+                    child.classList.add('wrong'); 
+                } else {
+                    child.classList.add('opacity-40'); 
+                }
+            });
+
+            if (isCorrect) {
+                score++; shootConfetti('#10b981');
+            } else {
+                document.getElementById('mobile-frame').classList.add('shake');
+                setTimeout(() => document.getElementById('mobile-frame').classList.remove('shake'), 400);
+                const fbBox = document.getElementById('feedback-box'); fbBox.classList.remove('hidden');
+            }
+
+            updateTopBar();
+            const nextBtn = document.getElementById('next-btn-container');
+            nextBtn.classList.remove('hidden'); nextBtn.style.animation = "fadeIn 0.3s ease forwards";
+            
+            setTimeout(() => { document.getElementById('question-container').scrollTo({ top: document.getElementById('question-container').scrollHeight, behavior: 'smooth' }); }, 100);
+        }
+
+        function nextQuestion() {
+            currentQ++;
+            if (currentQ < homeworkData.length) { updateTopBar(); renderQuestion(); } 
+            else { document.getElementById('progress-bar').style.width = `100%`; setTimeout(showResult, 300); }
+        }
+
+        function showResult() {
+            showScreen('screen-result');
+            document.getElementById('final-score').innerText = `${score}/15`;
+            
+            const rankEl = document.getElementById('result-rank');
+            const iconEl = document.getElementById('result-icon');
+            const titleEl = document.getElementById('result-title');
+
+            const percentage = score / homeworkData.length;
+
+            if (percentage === 1) {
+                titleEl.innerText = "Perfect!";
+                rankEl.innerText = "Status: Hired";
+                iconEl.innerHTML = '<i class="fas fa-check-circle text-6xl text-[#10b981]"></i>';
+                shootConfetti('#10b981'); setTimeout(() => shootConfetti('#0ea5e9'), 500);
+            } else if (percentage >= 0.7) {
+                titleEl.innerText = "Good Job";
+                rankEl.innerText = "Status: Approved";
+                rankEl.className = "text-[10px] text-black font-bold uppercase tracking-widest border border-transparent px-4 py-1.5 bg-[var(--brand-ocean)] rounded-full mb-10 shadow-sm font-mono";
+                iconEl.innerHTML = '<i class="fas fa-thumbs-up text-6xl text-[var(--brand-ocean)]"></i>';
+                iconEl.className = "w-32 h-32 rounded-full bg-[rgba(14,165,233,0.1)] mb-8 flex items-center justify-center border-4 border-[var(--brand-ocean)] shadow-[0_0_30px_rgba(14,165,233,0.2)]";
+                shootConfetti('#0ea5e9');
+            } else {
+                titleEl.innerText = "Try Again";
+                rankEl.innerText = "Status: Rejected";
+                rankEl.className = "text-[10px] text-white font-bold uppercase tracking-widest border border-transparent px-4 py-1.5 bg-[#ef4444] rounded-full mb-10 shadow-sm font-mono";
+                iconEl.innerHTML = '<i class="fas fa-times-circle text-6xl text-[#ef4444]"></i>';
+                iconEl.className = "w-32 h-32 rounded-full bg-[rgba(239,68,68,0.1)] mb-8 flex items-center justify-center border-4 border-[#ef4444] shadow-[0_0_30px_rgba(239,68,68,0.2)]";
+            }
+        }
+
+        function shuffleArray(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } }
+
+        function shootConfetti(mainColor) {
+            const cCanvas = document.getElementById('confetti-canvas'); const cCtx = cCanvas.getContext('2d'); const frame = document.getElementById('mobile-frame');
+            cCanvas.width = frame.offsetWidth; cCanvas.height = frame.offsetHeight;
+            const pieces = []; const colors = [mainColor, '#10b981', '#ffffff'];
+            
+            for(let i=0; i<40; i++) { pieces.push({ x: cCanvas.width / 2, y: cCanvas.height / 2, vx: (Math.random() - 0.5) * 16, vy: (Math.random() - 1) * 16 - 4, size: Math.random() * 8 + 4, color: colors[Math.floor(Math.random() * colors.length)], rot: Math.random() * 360, rotSpeed: (Math.random() - 0.5) * 10 }); }
+            
+            let animationId;
+            function animateC() {
+                cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height); let active = false;
+                pieces.forEach(p => {
+                    p.x += p.vx; p.y += p.vy; p.vy += 0.5; p.rot += p.rotSpeed; if(p.y < cCanvas.height) active = true;
+                    cCtx.save(); cCtx.translate(p.x, p.y); cCtx.rotate(p.rot * Math.PI / 180); cCtx.fillStyle = p.color; cCtx.fillRect(-p.size/2, -p.size/2, p.size, p.size); cCtx.restore(); 
+                });
+                if(active) { animationId = requestAnimationFrame(animateC); } else { cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height); }
+            }
+            animateC();
+        }
+    </script>
+</body>
+</html>
